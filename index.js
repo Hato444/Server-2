@@ -21,10 +21,9 @@ app.use(morgan('dev'));
 
 // Session configuration
 app.use(session({
-  secret: 'your-session-secret', // Change this to a secret of your choice
-  resave: false,
+  secret: 'your-session-secret',
   saveUninitialized: true,
-  cookie: { secure: false } // Set to true in production
+  cookie: { secure: false } 
 }));
 
 // Routes

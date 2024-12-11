@@ -16,11 +16,18 @@ router.get('/', async (req, res) => {
 // Create a new order
 router.post('/', async (req, res) => {
     try {
-        const newOrder = new Order(req.body);
+        const { customerName, quantity, shippingDetails } = req.body;
+
+        // Ensure all required fields are present
+        if (!customerName || !quantity || !shippingDetails) {
+            return res.status(400).json({ error: 'Missing required fields' });
+        }
+
+        const newOrder = new Order({ ...req.body, status: 'Pending' });
         const savedOrder = await newOrder.save();
         res.status(201).json(savedOrder);
     } catch (err) {
-        res.status(400).json({ error: 'Invalid data' });
+        res.status(400).json({ error: err.message });
     }
 });
 
@@ -28,14 +35,15 @@ router.post('/', async (req, res) => {
 router.put('/:id', async (req, res) => {
     try {
         const order = await Order.findById(req.params.id);
-        if (order.status !== 'Shipped') {
-            const updatedOrder = await Order.findByIdAndUpdate(req.params.id, req.body, { new: true });
-            res.json(updatedOrder);
-        } else {
-            res.status(400).json({ error: 'Cannot update shipped order' });
+
+        if (order.status === 'Shipped') {
+            return res.status(400).json({ error: 'Cannot update a shipped order' });
         }
+
+        const updatedOrder = await Order.findByIdAndUpdate(req.params.id, req.body, { new: true });
+        res.json(updatedOrder);
     } catch (err) {
-        res.status(400).json({ error: 'Invalid data' });
+        res.status(400).json({ error: err.message });
     }
 });
 
